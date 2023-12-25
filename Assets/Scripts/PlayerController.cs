@@ -4,6 +4,6 @@ public class PlayerController : MonoBehaviour
 {
     private void Awake()
     {
-        //DontDestroyOnLoad(this.gameObject);
+        DontDestroyOnLoad(this.gameObject);
     }
 }

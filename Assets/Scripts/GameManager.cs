@@ -52,7 +52,6 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            DontDestroyOnLoad(player);
             DontDestroyOnLoad(canvasIngame.gameObject);
             DontDestroyOnLoad(canvasGameOver.gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -62,8 +61,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         initialPlayerPosition = player.transform.position;
-        SetupUI();
-        portalManager.ShowPortal(); // TODO REMOVE
+        InitializeUI();
     }
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -129,7 +127,6 @@ public class GameManager : MonoBehaviour
         {
             UpdateUI(); // Update UI for the initial state of the second scene
         }
-        ResetCamera();
     }
 
     private void Update()
@@ -147,40 +144,6 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ToggleUIVisibility();
-        }
-    }
-    private void ResetCamera()
-    {
-        if (player != null)
-        {
-            Camera mainCamera = Camera.main;
-            if (mainCamera != null)
-            {
-                mainCamera.transform.position = player.transform.position + new Vector3(0, 1.8f, 0); // Adjust 1.8f to suit player height
-                mainCamera.transform.rotation = Quaternion.identity;
-            }
-
-            var fpsController = FindObjectOfType<UnityStandardAssets.Characters.FirstPerson.FirstPersonController>();
-            if (fpsController != null)
-            {
-                // Toggle the enabled state of the component to reset it
-                fpsController.enabled = false;
-                fpsController.enabled = true;
-            }
-            Rigidbody playerRigidbody = player.GetComponent<Rigidbody>();
-            if (playerRigidbody != null)
-            {
-                playerRigidbody.velocity = Vector3.zero;
-                playerRigidbody.angularVelocity = Vector3.zero;
-            }
-            CharacterController characterController = player.GetComponent<CharacterController>();
-            if (characterController != null)
-            {
-                characterController.enabled = false;
-                //characterController.SimpleMove(Vector3.zero);
-                //player.transform.position = initialPlayerPosition;
-                characterController.enabled = true;
-            }
         }
     }
 
@@ -239,20 +202,29 @@ public class GameManager : MonoBehaviour
 
     #region UI
 
-    private void SetupUI()
+    private void InitializeUI()
     {
+        // Set the game to be active (not paused) and hide the cursor
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        // Set the initial visibility of UI elements
         if (canvasGameOver != null)
         {
-            canvasGameOver.enabled = false;
+            canvasGameOver.enabled = false; // Ensure game over menu is not visible initially
         }
         if (canvasIngame != null)
         {
-            canvasIngame.enabled = true;
+            canvasIngame.enabled = true; // Ensure in-game UI is visible initially
         }
         if (promptText != null)
         {
             promptText.gameObject.SetActive(false);
         }
+
+        // Set UI state to not visible
+        isUIVisible = false;
     }
 
     public void UpdateUI()
@@ -302,16 +274,22 @@ public class GameManager : MonoBehaviour
     private void ToggleUIVisibility()
     {
         isUIVisible = !isUIVisible; // Toggle the state
-        canvasIngame.enabled = isUIVisible;
-        canvasGameOver.enabled = !isUIVisible;
 
-        // Toggle cursor visibility and lock state
-        Cursor.visible = isUIVisible;
+        // Toggle UI elements and cursor visibility based on the isUIVisible flag
+        if (canvasIngame != null)
+        {
+            canvasIngame.enabled = !isUIVisible;
+        }
+        if (canvasGameOver != null)
+        {
+            canvasGameOver.enabled = isUIVisible;
+        }
+
         Cursor.lockState = isUIVisible ? CursorLockMode.None : CursorLockMode.Locked;
-
-        // Pause the game if the UI is visible
+        Cursor.visible = isUIVisible;
         Time.timeScale = isUIVisible ? 0f : 1f;
 
+        // Enable or disable the FPS controller based on the UI visibility
         var fpsController = player.GetComponent<FirstPersonController>();
         if (fpsController != null)
         {
@@ -348,6 +326,8 @@ public class GameManager : MonoBehaviour
                 donutSpawner.InitializeSpawning();
             }
         }
+        // Re-initialize the UI
+        InitializeUI();
         UpdateUI();
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
