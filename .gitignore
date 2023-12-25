@@ -1,0 +1,43 @@
+﻿# This .gitignore file should ensure that certain large or unnecessary folders are not tracked by git
+
+# Ignore the Standard Assets directory
+Assets/Standard Assets/
+
+# Ignore all files in the Library directory
+Library/
+
+# Ignore all files in the Build directory
+Build/
+
+# Ignore all files in the Temp directory
+Temp/
+
+# Ignore all files in the obj directory
+obj/
+
+# Ignore all files in the Logs directory
+Logs/
+
+# Ignore user-specific Unity files
+UserSettings/
+
+# Visual Studio / MonoDevelop / Rider project specific files
+*.csproj
+*.sln
+*.suo
+*.userprefs
+*.user
+*.unityproj
+*.booproj
+
+# Visual Studio cache files
+.vs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
