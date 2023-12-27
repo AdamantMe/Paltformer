@@ -15,7 +15,7 @@ public class GameConfiguration : ScriptableObject
 
 
     public int CubesToSpawn = 1500;
-    public int EnergyPointsToSpawn = 10;
+    public int EnergyPointsToSpawn = 1; //TODO change back
     public Vector3 CubeAreaSize = new Vector3(5, 15, 5);
     public float EnergyPointSpawnAreaFactor = 0.8f;
 }

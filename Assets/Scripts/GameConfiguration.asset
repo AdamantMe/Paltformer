@@ -20,6 +20,6 @@ MonoBehaviour:
   MaximumCollectablesOnLevelOne: 10
   DeathBorder: -10
   CubesToSpawn: 1500
-  EnergyPointsToSpawn: 10
+  EnergyPointsToSpawn: 1
   CubeAreaSize: {x: 40, y: 25, z: 40}
   EnergyPointSpawnAreaFactor: 0.8

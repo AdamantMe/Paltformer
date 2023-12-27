@@ -30,12 +30,13 @@ public class Donut : MonoBehaviour
             GameManager.Instance.HidePrompt();
         }
     }
+
     private void Collect()
     {
         isCollected = true;
         GameManager.Instance.IncrementDonutsCollected();
         GameManager.Instance.HidePrompt(); // Hide the prompt after collecting the donut
-        gameObject.SetActive(false); // Deactivate the donut GameObject
+        gameObject.SetActive(false); // Deactivate the GameObject
     }
 
 

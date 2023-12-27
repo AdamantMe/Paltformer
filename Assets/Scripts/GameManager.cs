@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             DontDestroyOnLoad(canvasIngame.gameObject);
             DontDestroyOnLoad(canvasGameOver.gameObject);
+            //DontDestroyOnLoad(portalManager.portal);
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
     }
@@ -85,47 +86,6 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.LogError("GameConfig is not set in GameManager.");
-        }
-    }
-
-    private void ReassignComponentsFirstScene()
-    {
-        player = GameObject.FindGameObjectWithTag("Player");
-        donutSpawner = FindObjectOfType<DonutSpawner>();
-        portalManager = FindObjectOfType<PortalManager>();
-
-        if (donutSpawner != null)
-        {
-            donutSpawner.InitializeSpawning();
-        }
-
-        if (portalManager == null)
-        {
-            //Debug.LogError("PortalManager component not found on any GameObject in the scene.");
-        }
-        UpdateUI();
-    }
-
-    private void ReassignComponentsSecondScene()
-    {
-        player = GameObject.FindGameObjectWithTag("Player");
-
-        if (player != null)
-        {
-            Vector3 spawnPosition = new Vector3(0, 2, 0);
-            player.transform.position = spawnPosition;
-            player.transform.rotation = Quaternion.identity;
-        }
-
-        energyPointManager = FindObjectOfType<EnergyPointManager>();
-
-        if (energyPointManager == null)
-        {
-            Debug.LogError("EnergyPointManager not found in the scene.");
-        }
-        else
-        {
-            UpdateUI(); // Update UI for the initial state of the second scene
         }
     }
 
@@ -344,7 +304,8 @@ public class GameManager : MonoBehaviour
         Application.Quit();
     }
 
-    #region DONUTS
+    #region First Scene
+
     public DonutSpawner donutSpawner;
 
     private int donutsCollected;
@@ -358,6 +319,19 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void ReassignComponentsFirstScene()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+        donutSpawner = FindObjectOfType<DonutSpawner>();
+        portalManager = FindObjectOfType<PortalManager>();
+
+        if (donutSpawner != null)
+        {
+            donutSpawner.InitializeSpawning();
+        }
+
+        UpdateUI();
+    }
 
     public void ShowPrompt()
     {
@@ -380,9 +354,47 @@ public class GameManager : MonoBehaviour
 
         if (DonutsCollected >= 0) // TODO Change back to "DonutsCollected == donutSpawner.GetDonutsSpawned()"
         {
-            portalManager.ShowPortal();
+            portalManager.SpawnPortal(initialPlayerPosition);
         }
     }
 
-    #endregion
+    #endregion First Scene
+
+    #region Second Scene
+
+    public void HandleEnergyPointCollection()
+    {
+        // Update UI to reflect the new energy point count
+        UpdateUI();
+
+        // Logic for finishing the stage:
+        // Spawn the portal at the player's initial position
+        portalManager.SpawnPortal(initialPlayerPosition);
+    }
+
+    private void ReassignComponentsSecondScene()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+
+        if (player != null)
+        {
+            Vector3 spawnPosition = new Vector3(0, 2, 0);
+            player.transform.position = spawnPosition;
+            player.transform.rotation = Quaternion.identity;
+        }
+
+        energyPointManager = FindObjectOfType<EnergyPointManager>();
+
+        if (energyPointManager == null)
+        {
+            Debug.LogError("EnergyPointManager not found in the scene.");
+        }
+        else
+        {
+            UpdateUI(); // Update UI for the initial state of the second scene
+        }
+    }
+
+
+    #endregion Second Scene
 }

@@ -39,8 +39,8 @@ public class EnergyPointManager : MonoBehaviour
         }
         else
         {
-            // All EnergyPoints collected
-            Debug.Log("All EnergyPoints collected!");
+            // Delegate the task to GameManager
+            GameManager.Instance.HandleEnergyPointCollection();
         }
     }
 
