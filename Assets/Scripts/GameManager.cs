@@ -211,6 +211,14 @@ public class GameManager : MonoBehaviour
                 collectedCounterText.text = $"Collected: {energyPointsCollected}/{GameConfig.EnergyPointsToSpawn}";
             }
         }
+        else if (currentScene.name == GameConfig.SceneThree)
+        {
+            if (collectedCounterText != null && energyPointManager != null)
+            {
+                int energyPointsCollected = energyPointManager.GetEnergyPointsCollected();
+                collectedCounterText.text = $"Collected: {energyPointsCollected}/{GameConfig.EnergyPointsToSpawn}";
+            }
+        }
     }
 
     private void ToggleUI(bool active)
@@ -397,4 +405,33 @@ public class GameManager : MonoBehaviour
 
 
     #endregion Second Scene
+
+    #region Third Scene
+
+    private void ReassignComponentsThirdScene()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+
+        //if (player != null)
+        //{
+        //    Vector3 spawnPosition = new Vector3(0, 2, 0);
+        //    player.transform.position = spawnPosition;
+        //    player.transform.rotation = Quaternion.identity;
+        //}
+
+        energyPointManager = FindObjectOfType<EnergyPointManager>();
+
+        //if (energyPointManager == null)
+        //{
+        //    Debug.LogError("EnergyPointManager not found in the scene.");
+        //}
+        //else
+        //{
+        //}
+
+        UpdateUI(); 
+    }
+
+
+    #endregion Third Scene
 }

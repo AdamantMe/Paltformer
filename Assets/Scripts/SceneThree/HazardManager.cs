@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class HazardManager : MonoBehaviour
 {
-    public GameObject tileParent;
     private List<HazardTile> allTiles = new List<HazardTile>();
 
     public void AddTile(HazardTile tile)
@@ -14,13 +13,13 @@ public class HazardManager : MonoBehaviour
     public void Initialize()
     {
         // Start the hazard effect cycle
-        InvokeRepeating(nameof(ActivateRandomTiles), 2f, 6f);
+        InvokeRepeating(nameof(ActivateRandomTiles), 2f, 6f); // Adjust the timing as needed
     }
 
     private void ActivateRandomTiles()
     {
         // Randomly choose tiles to activate
-        for (int i = 0; i < allTiles.Count; i += 4)
+        for (int i = 0; i < allTiles.Count; i += 4) // Assuming 4 tiles per row
         {
             int tilesToActivate = Random.Range(1, 4); // At least 1, at most 3
             HashSet<int> activatedTilesIndexes = new HashSet<int>();
