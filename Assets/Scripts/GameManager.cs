@@ -54,16 +54,32 @@ public class GameManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             DontDestroyOnLoad(canvasIngame.gameObject);
             DontDestroyOnLoad(canvasGameOver.gameObject);
-            //DontDestroyOnLoad(portalManager.portal);
+
+            // Find and persist the EnergyPointManager if it's in the scene
+            EnergyPointManager existingManager = FindObjectOfType<EnergyPointManager>();
+            if (existingManager != null)
+            {
+                energyPointManager = existingManager;
+                DontDestroyOnLoad(energyPointManager.gameObject);
+            }
+
+            if (portalManager != null && portalManager.gameObject != gameObject)
+            {
+                DontDestroyOnLoad(portalManager.gameObject);
+            }
+
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
     }
+
+
 
     private void Start()
     {
         initialPlayerPosition = player.transform.position;
         InitializeUI();
     }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         isGameBeingReset = false;
@@ -78,15 +94,17 @@ public class GameManager : MonoBehaviour
             {
                 ReassignComponentsSecondScene();
             }
-            else
+            else if (scene.name == GameConfig.SceneThree)
             {
-
+                ReassignComponentsThirdScene();
             }
+            energyPointManager.InitializeSpawning();
         }
         else
         {
             Debug.LogError("GameConfig is not set in GameManager.");
         }
+        UpdateUI();
     }
 
     private void Update()
@@ -196,27 +214,20 @@ public class GameManager : MonoBehaviour
             healthText.text = $"Health {Health}";
         }
 
-        if (currentScene.name == GameConfig.SceneOne)
+        if (energyPointManager != null && collectedCounterText != null)
         {
-            if (collectedCounterText != null && donutSpawner != null)
+            int energyPointsCollected = energyPointManager.GetEnergyPointsCollected();
+
+            if (currentScene.name == GameConfig.SceneOne)
             {
-                collectedCounterText.text = $"Collected: {DonutsCollected}/{donutSpawner.GetDonutsSpawned()}";
-            }
-        }
-        else if (currentScene.name == GameConfig.SceneTwo)
-        {
-            if (collectedCounterText != null && energyPointManager != null)
-            {
-                int energyPointsCollected = energyPointManager.GetEnergyPointsCollected();
                 collectedCounterText.text = $"Collected: {energyPointsCollected}/{GameConfig.EnergyPointsToSpawn}";
             }
-        }
-        else if (currentScene.name == GameConfig.SceneThree)
-        {
-            if (collectedCounterText != null && energyPointManager != null)
+            else if (currentScene.name == GameConfig.SceneTwo)
             {
-                int energyPointsCollected = energyPointManager.GetEnergyPointsCollected();
                 collectedCounterText.text = $"Collected: {energyPointsCollected}/{GameConfig.EnergyPointsToSpawn}";
+            }
+            else if (currentScene.name == GameConfig.SceneThree)
+            {
             }
         }
     }
@@ -329,16 +340,6 @@ public class GameManager : MonoBehaviour
 
     private void ReassignComponentsFirstScene()
     {
-        player = GameObject.FindGameObjectWithTag("Player");
-        donutSpawner = FindObjectOfType<DonutSpawner>();
-        portalManager = FindObjectOfType<PortalManager>();
-
-        if (donutSpawner != null)
-        {
-            donutSpawner.InitializeSpawning();
-        }
-
-        UpdateUI();
     }
 
     public void ShowPrompt()
@@ -356,14 +357,17 @@ public class GameManager : MonoBehaviour
         return promptText != null && promptText.gameObject.activeSelf;
     }
 
-    public void IncrementDonutsCollected()
+    public void IncrementEnergyPointsCollected()
     {
-        DonutsCollected++;
+        int energyPointsCollected = energyPointManager.GetEnergyPointsCollected();
+        energyPointsCollected++;
 
-        if (DonutsCollected >= 0) // TODO Change back to "DonutsCollected == donutSpawner.GetDonutsSpawned()"
+        if (energyPointsCollected >= GameConfig.EnergyPointsToSpawn)
         {
             portalManager.SpawnPortal(initialPlayerPosition);
         }
+
+        UpdateUI();
     }
 
     #endregion First Scene
@@ -390,17 +394,6 @@ public class GameManager : MonoBehaviour
             player.transform.position = spawnPosition;
             player.transform.rotation = Quaternion.identity;
         }
-
-        energyPointManager = FindObjectOfType<EnergyPointManager>();
-
-        if (energyPointManager == null)
-        {
-            Debug.LogError("EnergyPointManager not found in the scene.");
-        }
-        else
-        {
-            UpdateUI(); // Update UI for the initial state of the second scene
-        }
     }
 
 
@@ -410,28 +403,26 @@ public class GameManager : MonoBehaviour
 
     private void ReassignComponentsThirdScene()
     {
-        player = GameObject.FindGameObjectWithTag("Player");
-
-        //if (player != null)
-        //{
-        //    Vector3 spawnPosition = new Vector3(0, 2, 0);
-        //    player.transform.position = spawnPosition;
-        //    player.transform.rotation = Quaternion.identity;
-        //}
-
-        energyPointManager = FindObjectOfType<EnergyPointManager>();
-
-        //if (energyPointManager == null)
-        //{
-        //    Debug.LogError("EnergyPointManager not found in the scene.");
-        //}
-        //else
-        //{
-        //}
-
-        UpdateUI(); 
+        //player = GameObject.FindGameObjectWithTag("Player");
+        //energyPointManager = FindObjectOfType<EnergyPointManager>();
     }
 
+    public void SetPlayer(GameObject newPlayer)
+    {
+        player = newPlayer;
+        // For respawn purposes
+        initialPlayerPosition = player.transform.position;
+    }
+
+    public void ApplyDamageToPlayer(float damage)
+    {
+        Health -= (int)damage;
+        if (Health <= 0)
+        {
+            PlayerDied();
+        }
+        UpdateUI();
+    }
 
     #endregion Third Scene
 }

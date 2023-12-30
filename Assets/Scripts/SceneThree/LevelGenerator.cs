@@ -8,7 +8,6 @@ public class LevelGenerator : MonoBehaviour
 
     private void Start()
     {
-        // Instantiate the larger plane
         GameObject plane = Instantiate(planePrefab, Vector3.zero, Quaternion.identity);
 
         // Create a new GameObject for the HazardManager and add the HazardManager component to it
@@ -16,15 +15,17 @@ public class LevelGenerator : MonoBehaviour
         HazardManager hazardManagerInstance = hazardManagerObj.AddComponent<HazardManager>();
 
         // Generate the tiles
-        for (int i = 0; i < 4; i++) // 4 tiles across the width
+        int tilesPerRow = 4;
+        int numberOfRows = 80; 
+
+        for (int i = 0; i < tilesPerRow; i++)
         {
-            for (int j = 0; j < 20; j++) // 20 tiles along the length
+            for (int j = 0; j < numberOfRows; j++)
             {
                 float xPosition = (i * 5f) - (5f * 1.5f);
-                float zPosition = (j * 5f) - (50f - 2.5f);
-                Vector3 spawnPosition = new Vector3(xPosition, 0.01f, zPosition);
+                float zPosition = (j * 5f) - (numberOfRows * 5f / 2) + 2.5f;
 
-                // Instantiate the tile at the calculated position
+                Vector3 spawnPosition = new Vector3(xPosition, 0.01f, zPosition);
                 GameObject tile = Instantiate(tilePrefab, spawnPosition, Quaternion.identity);
                 tile.transform.localScale = new Vector3(0.5f, 1f, 0.5f);
 
@@ -38,7 +39,10 @@ public class LevelGenerator : MonoBehaviour
         hazardManagerInstance.Initialize();
 
         // Spawn the player
-        Vector3 playerStartPosition = new Vector3(-7.5f, 1f, -45f);
-        Instantiate(playerPrefab, playerStartPosition, Quaternion.identity);
+        Vector3 playerStartPosition = new Vector3(0, 1f, -200); // Position player at the start of the plane
+        GameObject newPlayer = Instantiate(playerPrefab, playerStartPosition, Quaternion.identity);
+
+        // Update GameManager's player reference
+        GameManager.Instance.SetPlayer(newPlayer);
     }
 }

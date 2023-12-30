@@ -1,55 +1,96 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnergyPointManager : MonoBehaviour
 {
     public GameConfiguration gameConfig;
     public GameObject energyPointPrefab;
-    
-    private int energyPointsCollected = 0;
-    public int EnergyPointsCollected 
+    public List<Transform> spawnPointsSceneOne;
+    private List<GameObject> spawnedEnergyPoints = new List<GameObject>();
+
+    private int energyPointsCollected;
+    public int EnergyPointsCollected
     {
-        get
-        {
-            return energyPointsCollected;
-        }
-        set
+        get => energyPointsCollected;
+        private set
         {
             energyPointsCollected = value;
-            if (GameManager.Instance != null)
+            GameManager.Instance.UpdateUI();
+        }
+    }
+
+    public void InitializeSpawning()
+    {
+        ClearEnergyPoints();
+        EnergyPointsCollected = 0;
+
+        if (SceneManager.GetActiveScene().name == GameManager.Instance.GameConfig.SceneOne)
+        {
+            SpawnEnergyPointsSceneOne();
+        }
+        else if (SceneManager.GetActiveScene().name == GameManager.Instance.GameConfig.SceneTwo)
+        {
+            SpawnEnergyPointSceneTwo();
+        }
+        else if (SceneManager.GetActiveScene().name == GameManager.Instance.GameConfig.SceneTwo)
+        {
+            SpawnEnergyPointSceneThree();
+        }
+    }
+
+    private void ClearEnergyPoints()
+    {
+        foreach (GameObject energyPoint in spawnedEnergyPoints)
+        {
+            if (energyPoint != null)
             {
-                GameManager.Instance.UpdateUI();
+                Destroy(energyPoint);
             }
         }
+        spawnedEnergyPoints.Clear();
     }
-
-    private void Start()
-    {
-        // Spawn the first EnergyPoint
-        SpawnEnergyPoint();
-    }
-
-    public void CollectEnergyPoint()
+    
+    public void CollectEnergyPoint(GameObject energyPoint)
     {
         EnergyPointsCollected++;
-
-        if (EnergyPointsCollected < gameConfig.EnergyPointsToSpawn)
+        energyPoint.SetActive(false); // Deactivate the collected energy point
+        
+        // Check if all energy points have been collected
+        //if (EnergyPointsCollected >= gameConfig.MaximumCollectablesOnLevelOne) // TODO
         {
-            // Spawn next EnergyPoint
-            SpawnEnergyPoint();
-        }
-        else
-        {
-            // Delegate the task to GameManager
             GameManager.Instance.HandleEnergyPointCollection();
         }
     }
 
-    private void SpawnEnergyPoint()
+    private void SpawnEnergyPointsSceneOne()
+    {
+        HashSet<Transform> chosenIslands = new HashSet<Transform>();
+
+        while (spawnedEnergyPoints.Count < gameConfig.MaximumCollectablesOnLevelOne && spawnPointsSceneOne.Count > 0)
+        {
+            Transform selectedIsland = spawnPointsSceneOne[Random.Range(0, spawnPointsSceneOne.Count)];
+
+            if (IsFarEnoughFromOthers(selectedIsland, chosenIslands))
+            {
+                GameObject energyPoint = Instantiate(energyPointPrefab, selectedIsland.position + Vector3.up * 2, Quaternion.identity);
+                spawnedEnergyPoints.Add(energyPoint);
+                chosenIslands.Add(selectedIsland);
+            }
+        }
+    }
+
+    private void SpawnEnergyPointSceneTwo()
     {
         Vector3 spawnArea = gameConfig.CubeAreaSize * gameConfig.EnergyPointSpawnAreaFactor;
         Vector3 spawnPosition = GetRandomSpawnPosition(spawnArea);
 
         Instantiate(energyPointPrefab, spawnPosition, Quaternion.identity);
+    }
+    
+
+    private void SpawnEnergyPointSceneThree()
+    {
     }
 
     private Vector3 GetRandomSpawnPosition(Vector3 spawnArea)
@@ -61,5 +102,17 @@ public class EnergyPointManager : MonoBehaviour
     public int GetEnergyPointsCollected()
     {
         return EnergyPointsCollected;
+    }
+
+    private bool IsFarEnoughFromOthers(Transform island, HashSet<Transform> otherIslands)
+    {
+        foreach (Transform other in otherIslands)
+        {
+            if (Vector3.Distance(island.position, other.position) < gameConfig.MinimumDistanceBetweenEnergyPoints)
+            {
+                return false; // Not far enough from another island
+            }
+        }
+        return true; // Far enough from all other islands
     }
 }

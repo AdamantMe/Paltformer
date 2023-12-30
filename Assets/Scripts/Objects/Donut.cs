@@ -7,36 +7,36 @@ public class Donut : MonoBehaviour
 
     private void Update()
     {
-        if (!isCollected && isPlayerNearby && Input.GetKeyDown(KeyCode.E))
-        {
-            Collect();
-        }
+        //if (!isCollected && isPlayerNearby && Input.GetKeyDown(KeyCode.E))
+        //{
+        //    Collect();
+        //}
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            isPlayerNearby = true;
-            GameManager.Instance.ShowPrompt();
-        }
+        //if (other.CompareTag("Player"))
+        //{
+        //    isPlayerNearby = true;
+        //    GameManager.Instance.ShowPrompt();
+        //}
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            isPlayerNearby = false;
-            GameManager.Instance.HidePrompt();
-        }
+        //if (other.CompareTag("Player"))
+        //{
+        //    isPlayerNearby = false;
+        //    GameManager.Instance.HidePrompt();
+        //}
     }
 
     private void Collect()
     {
-        isCollected = true;
-        GameManager.Instance.IncrementDonutsCollected();
-        GameManager.Instance.HidePrompt(); // Hide the prompt after collecting the donut
-        gameObject.SetActive(false); // Deactivate the GameObject
+        //isCollected = true;
+        //GameManager.Instance.IncrementDonutsCollected();
+        //GameManager.Instance.HidePrompt(); // Hide the prompt after collecting the donut
+        //gameObject.SetActive(false); // Deactivate the GameObject
     }
 
 

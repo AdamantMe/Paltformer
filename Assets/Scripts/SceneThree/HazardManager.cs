@@ -13,23 +13,26 @@ public class HazardManager : MonoBehaviour
     public void Initialize()
     {
         // Start the hazard effect cycle
-        InvokeRepeating(nameof(ActivateRandomTiles), 2f, 6f); // Adjust the timing as needed
+        InvokeRepeating(nameof(ActivateRandomTiles), 2f, 6f);
     }
 
     private void ActivateRandomTiles()
     {
         // Randomly choose tiles to activate
-        for (int i = 0; i < allTiles.Count; i += 4) // Assuming 4 tiles per row
+        for (int i = 0; i < allTiles.Count; i += 4) // Iterate over each row
         {
-            int tilesToActivate = Random.Range(1, 4); // At least 1, at most 3
+            int tilesToActivate = Random.Range(2, 5); // At least 1, at most 3 tiles per row
             HashSet<int> activatedTilesIndexes = new HashSet<int>();
+
             while (activatedTilesIndexes.Count < tilesToActivate)
             {
-                int tileIndex = Random.Range(i, i + 4);
-                if (!activatedTilesIndexes.Contains(tileIndex))
+                int tileIndexWithinRow = Random.Range(0, 4); // Random index within the row
+                int absoluteTileIndex = i + tileIndexWithinRow; // Calculate absolute index
+
+                if (!activatedTilesIndexes.Contains(absoluteTileIndex) && absoluteTileIndex < allTiles.Count)
                 {
-                    allTiles[tileIndex].StartHazardEffect();
-                    activatedTilesIndexes.Add(tileIndex);
+                    allTiles[absoluteTileIndex].StartHazardEffect();
+                    activatedTilesIndexes.Add(absoluteTileIndex);
                 }
             }
         }

@@ -17,7 +17,7 @@ MonoBehaviour:
   SceneThree: LevelThree
   PlayerMaxHealth: 100
   HealthDeductionOnFall: 40
-  MaximumCollectablesOnLevelOne: 10
+  MaximumCollectablesOnLevelOne: 5
   DeathBorder: -10
   CubesToSpawn: 1500
   EnergyPointsToSpawn: 1

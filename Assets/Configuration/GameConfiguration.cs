@@ -10,7 +10,8 @@ public class GameConfiguration : ScriptableObject
     public int PlayerMaxHealth = 100;
     public int HealthDeductionOnFall = 40;
 
-    public int MaximumCollectablesOnLevelOne = 10;
+    public int MaximumCollectablesOnLevelOne = 5;
+    public float MinimumDistanceBetweenEnergyPoints = 14f;
     public float DeathBorder = -10f;
 
 
@@ -18,4 +19,6 @@ public class GameConfiguration : ScriptableObject
     public int EnergyPointsToSpawn = 1; //TODO change back
     public Vector3 CubeAreaSize = new Vector3(5, 15, 5);
     public float EnergyPointSpawnAreaFactor = 0.8f;
+
+    public int HealthLostPerSecond = 1;
 }

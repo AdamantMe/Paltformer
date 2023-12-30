@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class HazardTile : MonoBehaviour
 {
+    public GameConfiguration gameConfig;
     public Color safeColor = Color.white;
     public Color hazardColor = Color.red;
     private Renderer renderer;
@@ -46,4 +47,25 @@ public class HazardTile : MonoBehaviour
         }
         renderer.material.color = safeColor;
     }
+
+    //private void OnTriggerStay(Collider other)
+    //{
+    //    if (renderer.material.color == hazardColor && other.CompareTag("Player"))
+    //    {
+    //        GameManager.Instance.ApplyDamageToPlayer(gameConfig.HealthLostPerSecond * Time.deltaTime);
+    //    }
+    //}
+
+    //private void OnTriggerEnter(Collider other)
+    //{
+        
+    //}
+
+    //private void OnTriggerExit(Collider other)
+    //{
+    //    if (other.CompareTag("Player"))
+    //    {
+
+    //    }
+    //}
 }
