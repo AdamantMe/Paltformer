@@ -166,9 +166,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2bd9e8b918a7684db0b8e17f313f1bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameConfig: {fileID: 11400000, guid: 11393dc1c1f889745a7e1b23bad20dd7, type: 2}
   tilePrefab: {fileID: 5867882376048703347, guid: 289e37f3f5e65e245b5bdddcb27d8f4d, type: 3}
   planePrefab: {fileID: 7046849166409487759, guid: 64c848f9172694c4a9977da4cc52b8f3, type: 3}
   playerPrefab: {fileID: 1453098579543404638, guid: 020602f638a29ec4bbf29049a9f889b3, type: 3}
+  energyPointPrefab: {fileID: 3750364735950302144, guid: 6bd285b51a0557c499a31eb720c5eaaf, type: 3}
+  numberOfEnergyPoints: 10
 --- !u!1 &859225937
 GameObject:
   m_ObjectHideFlags: 0

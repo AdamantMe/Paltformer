@@ -1,25 +1,26 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using UnityStandardAssets.Characters.FirstPerson;
 
 public class GameManager : MonoBehaviour
 {
-    [Tooltip("The Y-axis height at which the player dies.")]
     [SerializeField] private Canvas canvasGameOver;
     [SerializeField] private GameObject player;
     [SerializeField] private TMP_Text promptText;
     [SerializeField] private TMP_Text healthText;
+    [SerializeField] private TMP_Text txtScore;
+    [SerializeField] private Button retryButton;
+
     public Canvas canvasIngame;
     public EnergyPointManager energyPointManager;
-
     public GameConfiguration GameConfig;
     public static GameManager Instance { get; private set; }
 
-    private bool isGameBeingReset = false;
     private bool isUIVisible = true;
+    private float startTime;
 
     private int health = 100;
     public int Health
@@ -72,18 +73,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-
     private void Start()
     {
+        startTime = Time.time;
+        txtScore.gameObject.SetActive(false);
         initialPlayerPosition = player.transform.position;
         InitializeUI();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        isGameBeingReset = false;
-
         if (GameConfig != null)
         {
             if (scene.name == GameConfig.SceneOne)
@@ -171,11 +170,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void PlayerDied()
+    public void PlayerDied()
     {
         IsDead = true;
         Health = 0;
-        ToggleUI(false);
+        ShowFinalScreen(false);
+    }
+
+    public void PlayerFinishedGame()
+    {
+        ShowFinalScreen(true);
     }
 
     #region UI
@@ -228,6 +232,11 @@ public class GameManager : MonoBehaviour
             }
             else if (currentScene.name == GameConfig.SceneThree)
             {
+                collectedCounterText.text = $"Collected: {energyPointsCollected}/{GameConfig.EnergyPointsToSpawn}";
+                if (energyPointsCollected >= GameConfig.EnergyPointsToSpawn)
+                {
+                    ShowFinalScreen(true);
+                }
             }
         }
     }
@@ -268,11 +277,18 @@ public class GameManager : MonoBehaviour
         Cursor.visible = isUIVisible;
         Time.timeScale = isUIVisible ? 0f : 1f;
 
-        // Enable or disable the FPS controller based on the UI visibility
-        var fpsController = player.GetComponent<FirstPersonController>();
-        if (fpsController != null)
+        if (player == null)
         {
-            fpsController.enabled = !isUIVisible;
+            player = GameObject.FindGameObjectWithTag("Player");
+        }
+        // Enable or disable the FPS controller based on the UI visibility
+        if (player != null)
+        {
+            var fpsController = player.GetComponent<FirstPersonController>();
+            if (fpsController != null)
+            {
+                fpsController.enabled = !isUIVisible;
+            }
         }
     }
 
@@ -280,37 +296,22 @@ public class GameManager : MonoBehaviour
 
     public void ResetGame()
     {
-        isGameBeingReset = true; // Set the flag to true when resetting the game
+        // Reset the health to full
+        Health = GameConfig.PlayerMaxHealth;
 
-        if (EventSystem.current != null)
-        {
-            EventSystem.current.SetSelectedGameObject(null);
-        }
+        // Reload the current scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
-        Health = 100;
+        InitializeUI();
         IsDead = false;
+
+        // Ensure the UI is set correctly
         ToggleUI(true);
         Time.timeScale = 1.0f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        RespawnPlayer();
-
-        // Only reset donutsCollected if the game is being reset
-        if (isGameBeingReset)
-        {
-            DonutsCollected = 0;
-            if (donutSpawner != null)
-            {
-                donutSpawner.InitializeSpawning();
-            }
-        }
-        // Re-initialize the UI
-        InitializeUI();
-        UpdateUI();
-
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
 
 
     private void OnDestroy()
@@ -325,49 +326,10 @@ public class GameManager : MonoBehaviour
 
     #region First Scene
 
-    public DonutSpawner donutSpawner;
-
-    private int donutsCollected;
-    public int DonutsCollected
-    {
-        get => donutsCollected;
-        set
-        {
-            donutsCollected = value;
-            UpdateUI();
-        }
-    }
-
     private void ReassignComponentsFirstScene()
     {
-    }
-
-    public void ShowPrompt()
-    {
-        promptText?.gameObject.SetActive(true);
-    }
-
-    public void HidePrompt()
-    {
-        promptText?.gameObject.SetActive(false);
-    }
-
-    public bool PromptIsActive()
-    {
-        return promptText != null && promptText.gameObject.activeSelf;
-    }
-
-    public void IncrementEnergyPointsCollected()
-    {
-        int energyPointsCollected = energyPointManager.GetEnergyPointsCollected();
-        energyPointsCollected++;
-
-        if (energyPointsCollected >= GameConfig.EnergyPointsToSpawn)
-        {
-            portalManager.SpawnPortal(initialPlayerPosition);
-        }
-
-        UpdateUI();
+        player = GameObject.FindGameObjectWithTag("Player");
+        energyPointManager = FindObjectOfType<EnergyPointManager>();
     }
 
     #endregion First Scene
@@ -376,12 +338,19 @@ public class GameManager : MonoBehaviour
 
     public void HandleEnergyPointCollection()
     {
-        // Update UI to reflect the new energy point count
+        // Reflect the UI changes in energy points collected
         UpdateUI();
 
-        // Logic for finishing the stage:
-        // Spawn the portal at the player's initial position
-        portalManager.SpawnPortal(initialPlayerPosition);
+        // For scene one spawn the portal in the middle of the islands
+        if (SceneManager.GetActiveScene().name == GameConfig.SceneOne)
+        {
+            Vector3 portalSpawnPosition = new Vector3(33, 1, -11);
+            portalManager.SpawnPortalAt(portalSpawnPosition);
+        }
+        else
+        {
+            portalManager.SpawnPortalAt(initialPlayerPosition);
+        }
     }
 
     private void ReassignComponentsSecondScene()
@@ -394,6 +363,11 @@ public class GameManager : MonoBehaviour
             player.transform.position = spawnPosition;
             player.transform.rotation = Quaternion.identity;
         }
+
+        if (energyPointManager != null)
+        {
+            energyPointManager.ToggleIslandsVisibility(false); // Deactivate islands in other scenes
+        }
     }
 
 
@@ -403,15 +377,9 @@ public class GameManager : MonoBehaviour
 
     private void ReassignComponentsThirdScene()
     {
-        //player = GameObject.FindGameObjectWithTag("Player");
-        //energyPointManager = FindObjectOfType<EnergyPointManager>();
-    }
-
-    public void SetPlayer(GameObject newPlayer)
-    {
-        player = newPlayer;
-        // For respawn purposes
-        initialPlayerPosition = player.transform.position;
+        player = GameObject.FindGameObjectWithTag("Player");
+        energyPointManager = FindObjectOfType<EnergyPointManager>();
+        initialPlayerPosition = new Vector3(-7.5f, 1f, -195f);
     }
 
     public void ApplyDamageToPlayer(float damage)
@@ -425,4 +393,71 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion Third Scene
+
+    #region Final Score
+
+    private void ShowFinalScreen(bool completedGame)
+    {
+        if (canvasGameOver != null)
+        {
+            canvasGameOver.enabled = true;
+            canvasIngame.enabled = false;
+            Time.timeScale = 0;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            if (completedGame || IsDead)
+            {
+                UpdateScoreUI(completedGame);
+                txtScore.gameObject.SetActive(true);
+            }
+            else
+            {
+                txtScore.gameObject.SetActive(false);
+            }
+
+            if (completedGame)
+            {
+                retryButton.interactable = false;
+            }
+            else
+            {
+                retryButton.interactable = true;
+            }
+        }
+    }
+
+    private void UpdateScoreUI(bool completedGame)
+    {
+        if (completedGame || IsDead)
+        {
+            float timeTaken = Time.time - startTime;
+            float score = CalculateScore(Health, timeTaken);
+
+            string scoreDetails = $"Health left: {Health}\n\n" +
+                                  $"Time taken: {timeTaken:F2} seconds\n\n" +
+                                  $"Total Score: {score}/10";
+
+            txtScore.text = scoreDetails;
+        }
+    }
+
+    private float CalculateScore(int health, float time)
+    {
+        var levelTimeLimit = GameConfig.LevelTimeLimit;
+        // Full score for completing under 5 minutes and full health
+        if (time <= levelTimeLimit && health == 100)
+        {
+            return 10.0f;
+        }
+        // Decrease score based on health and time
+        float timeScore = (levelTimeLimit - time) / levelTimeLimit * 5.0f;
+        float healthScore = (float)health / 100 * 5.0f;
+        float totalScore = timeScore + healthScore;
+
+        // Round (up) the score to one decimal place
+        return (float)Math.Round(totalScore, 1, MidpointRounding.AwayFromZero);
+    }
+
+    #endregion Final Score
 }

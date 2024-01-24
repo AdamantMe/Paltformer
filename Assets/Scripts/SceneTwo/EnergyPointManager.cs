@@ -20,6 +20,14 @@ public class EnergyPointManager : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        foreach (var item in spawnPointsSceneOne)
+        {
+            DontDestroyOnLoad(item);
+        }
+    }
+
     public void InitializeSpawning()
     {
         ClearEnergyPoints();
@@ -39,6 +47,13 @@ public class EnergyPointManager : MonoBehaviour
         }
     }
 
+    public void ResetEnergyPoints()
+    {
+        EnergyPointsCollected = 0;
+        ClearEnergyPoints();
+        InitializeSpawning();
+    }
+
     private void ClearEnergyPoints()
     {
         foreach (GameObject energyPoint in spawnedEnergyPoints)
@@ -50,16 +65,25 @@ public class EnergyPointManager : MonoBehaviour
         }
         spawnedEnergyPoints.Clear();
     }
-    
+
+    public void AssignSpawnPointsSceneOne(List<Transform> newSpawnPoints)
+    {
+        spawnPointsSceneOne = newSpawnPoints;
+    }
+
     public void CollectEnergyPoint(GameObject energyPoint)
     {
         EnergyPointsCollected++;
-        energyPoint.SetActive(false); // Deactivate the collected energy point
-        
+
         // Check if all energy points have been collected
-        //if (EnergyPointsCollected >= gameConfig.MaximumCollectablesOnLevelOne) // TODO
+        if (EnergyPointsCollected >= gameConfig.MaximumCollectablesOnLevelOne)
         {
             GameManager.Instance.HandleEnergyPointCollection();
+        }
+        // If limit isn't reached, check if the collection happened in Scene Two and respawn a new energy point
+        else if (SceneManager.GetActiveScene().name == GameManager.Instance.GameConfig.SceneTwo)
+        {
+            SpawnEnergyPointSceneTwo();
         }
     }
 
@@ -85,9 +109,10 @@ public class EnergyPointManager : MonoBehaviour
         Vector3 spawnArea = gameConfig.CubeAreaSize * gameConfig.EnergyPointSpawnAreaFactor;
         Vector3 spawnPosition = GetRandomSpawnPosition(spawnArea);
 
-        Instantiate(energyPointPrefab, spawnPosition, Quaternion.identity);
+        GameObject newEnergyPoint = Instantiate(energyPointPrefab, spawnPosition, Quaternion.identity);
+        spawnedEnergyPoints.Add(newEnergyPoint);
     }
-    
+
 
     private void SpawnEnergyPointSceneThree()
     {
@@ -114,5 +139,16 @@ public class EnergyPointManager : MonoBehaviour
             }
         }
         return true; // Far enough from all other islands
+    }
+
+    public void ToggleIslandsVisibility(bool isVisible)
+    {
+        foreach (var island in spawnPointsSceneOne)
+        {
+            if (island != null)
+            {
+                island.gameObject.SetActive(isVisible);
+            }
+        }
     }
 }

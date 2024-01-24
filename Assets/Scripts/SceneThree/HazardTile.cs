@@ -8,9 +8,10 @@ public class HazardTile : MonoBehaviour
     public Color hazardColor = Color.red;
     private Renderer renderer;
 
-    private float timeToTurnRed = 2f;
-    private float timeRedLasts = 3f;
-    private float timeToTurnWhite = 1f;
+    private float timeToTurnRed = 1f;
+    private float timeRedLasts = 1f;
+    private float timeToTurnWhite = 0.5f;
+    public bool IsCurrentlyHazardous { get; private set; }
 
     private void Awake()
     {
@@ -34,8 +35,14 @@ public class HazardTile : MonoBehaviour
         }
         renderer.material.color = hazardColor;
 
+        // Set tile as hazardous only after it turns completely red
+        IsCurrentlyHazardous = true;
+
         // Stay red for a while
         yield return new WaitForSeconds(timeRedLasts);
+
+        // Reset hazardous state before turning back
+        IsCurrentlyHazardous = false;
 
         // Gradually turn back to white
         elapsedTime = 0f;
@@ -48,24 +55,4 @@ public class HazardTile : MonoBehaviour
         renderer.material.color = safeColor;
     }
 
-    //private void OnTriggerStay(Collider other)
-    //{
-    //    if (renderer.material.color == hazardColor && other.CompareTag("Player"))
-    //    {
-    //        GameManager.Instance.ApplyDamageToPlayer(gameConfig.HealthLostPerSecond * Time.deltaTime);
-    //    }
-    //}
-
-    //private void OnTriggerEnter(Collider other)
-    //{
-        
-    //}
-
-    //private void OnTriggerExit(Collider other)
-    //{
-    //    if (other.CompareTag("Player"))
-    //    {
-
-    //    }
-    //}
 }

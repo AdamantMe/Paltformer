@@ -6,7 +6,7 @@ public class PortalManager : MonoBehaviour
     public static PortalManager Instance { get; private set; }
 
     [SerializeField] private GameObject portalPrefab;
-    private GameObject currentPortalInstance; // This will keep track of the instantiated portal
+    private GameObject currentPortalInstance;
 
     private void Awake()
     {
@@ -21,7 +21,7 @@ public class PortalManager : MonoBehaviour
         }
     }
 
-    public void SpawnPortal(Vector3 spawnPosition)
+    public void SpawnPortalAt(Vector3 spawnPosition)
     {
         // Check if a portal already exists, and if so, destroy it.
         if (currentPortalInstance != null)
@@ -57,7 +57,6 @@ public class PortalManager : MonoBehaviour
         {
             return GameManager.Instance.GameConfig.SceneThree;
         }
-        // Add more logic if there are more scenes.
         return null;
     }
 

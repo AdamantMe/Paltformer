@@ -26,7 +26,7 @@ namespace Assets.Scripts.SceneTwo
 
             for (int i = 0; i < gameConfig.CubesToSpawn && attempts < maxAttempts;)
             {
-                float randomY = Mathf.Pow(Random.value, 2); // Squared distribution
+                float randomY = Mathf.Pow(Random.value, 2);
                 int addDeviation = Random.Range(0, 100);
                 float cubeSpawnY = addDeviation < 25 ? Random.Range(0f, 3) : Random.Range(0f, areaSize.y);
 

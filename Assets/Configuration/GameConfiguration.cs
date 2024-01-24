@@ -16,9 +16,12 @@ public class GameConfiguration : ScriptableObject
 
 
     public int CubesToSpawn = 1500;
-    public int EnergyPointsToSpawn = 1; //TODO change back
+    public int EnergyPointsToSpawn = 5; //TODO change back
     public Vector3 CubeAreaSize = new Vector3(5, 15, 5);
     public float EnergyPointSpawnAreaFactor = 0.8f;
 
+    public int MaximumCollectablesOnLevelThree = 5;
+
     public int HealthLostPerSecond = 1;
+    public float LevelTimeLimit = 300f; // 5 minutes
 }
